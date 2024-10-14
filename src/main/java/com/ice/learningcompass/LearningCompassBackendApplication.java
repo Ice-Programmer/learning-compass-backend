@@ -1,0 +1,13 @@
+package com.ice.learningcompass;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class LearningCompassBackendApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(LearningCompassBackendApplication.class, args);
+    }
+
+}
