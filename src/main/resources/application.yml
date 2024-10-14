@@ -1,0 +1,49 @@
+# 后端基础信息
+spring:
+  application:
+    name: learning-compass-backend
+  profiles:
+    active: dev
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  # mysql 数据库连接配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/learning_compass?useSSL=false&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 12345678
+  # 文件上传限制
+  servlet:
+    multipart:
+      max-file-size: 10MB
+# 后端服务器设置
+server:
+  address: 0.0.0.0
+  port: 8080
+  servlet:
+    context-path: /api
+# mybatis-plus设置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: isDelete    # 全局逻辑删除的实体字段名
+      logic-delete-value: 1  # 逻辑已删除值(默认为 1)
+      logic-not-delete-value: 0   # 逻辑未删除值(默认为 0)
+# 接口文档配置
+knife4j:
+  basic:
+    enable: true
+  setting:
+    language: en
+  openapi:
+    title: "Learning Compass API Documentation"
+    version: 1.0
+    group:
+      default:
+        api-rule: package
+        api-rule-resources:
+          - com.ice.learningcompass.controller
