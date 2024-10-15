@@ -15,6 +15,7 @@ import com.ice.learningcompass.mapper.CourseMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
@@ -68,6 +69,25 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
 
         // 更新数据库
         baseMapper.updateById(course);
+
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean disbandCourse(Long courseId, Long teacherId) {
+        // 判断课程是否存在
+        boolean exists = baseMapper.exists(Wrappers.<Course>lambdaQuery()
+                .eq(Course::getId, courseId)
+                .eq(Course::getTeacherId, teacherId));
+        ThrowUtils.throwIf(!exists, ErrorCode.NOT_FOUND_ERROR, "Course not exists！");
+
+        // 删除课程
+        baseMapper.deleteById(courseId);
+
+        // todo 删除上课学生
+
+        // todo 删除课程资料
 
         return true;
     }

@@ -2,7 +2,9 @@ package com.ice.learningcompass.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
+import cn.dev33.satoken.stp.StpUtil;
 import com.ice.learningcompass.common.BaseResponse;
+import com.ice.learningcompass.common.DeleteRequest;
 import com.ice.learningcompass.common.ErrorCode;
 import com.ice.learningcompass.common.ResultUtils;
 import com.ice.learningcompass.constant.UserConstant;
@@ -76,6 +78,26 @@ public class CourseController {
         User loginUser = userService.getLoginUser();
 
         Boolean result = courseService.editCourse(courseEditRequest, loginUser.getId());
+
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 教师解散课程
+     *
+     * @param deleteRequest 删除请求
+     * @return 删除成功
+     */
+    @PostMapping("/delete")
+    @SaCheckRole(value = {UserConstant.TEACHER_ROLE})
+    BaseResponse<Boolean> disbandCourse(DeleteRequest deleteRequest) {
+        if (deleteRequest.getId() == null || deleteRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 获取当前登录用户
+        User loginUser = userService.getLoginUser();
+
+        Boolean result = courseService.disbandCourse(deleteRequest.getId(), loginUser.getId());
 
         return ResultUtils.success(result);
     }

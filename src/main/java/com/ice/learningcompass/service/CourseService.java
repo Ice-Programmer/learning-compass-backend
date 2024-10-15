@@ -29,4 +29,13 @@ public interface CourseService extends IService<Course> {
      * @return 编辑成功
      */
     Boolean editCourse(CourseEditRequest courseEditRequest, Long teacherId);
+
+    /**
+     * 解散课程
+     *
+     * @param courseId  课程 id
+     * @param teacherId 教师 id
+     * @return 解散成功
+     */
+    Boolean disbandCourse(Long courseId, Long teacherId);
 }
