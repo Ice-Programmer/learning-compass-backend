@@ -31,7 +31,6 @@ create table if not exists `course`
     `name`        varchar(256)                       null comment 'Course Name',
     `description` text                               null comment 'Description',
     `picture`     varchar(2048)                      null comment 'Picture',
-    `userAvatar`  varchar(1024)                      null comment 'User Avatar',
     `tags`        varchar(1024)                      null comment 'Tags (JSON Array)',
     `teacherId`   bigint                             not null comment 'Teacher ID',
     `status`      tinyint                            not null comment 'Course Status: 0-Open/1-Closed',
