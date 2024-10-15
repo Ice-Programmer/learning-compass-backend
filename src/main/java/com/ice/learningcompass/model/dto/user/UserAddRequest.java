@@ -1,5 +1,6 @@
 package com.ice.learningcompass.model.dto.user;
 
+import io.swagger.annotations.Api;
 import lombok.Data;
 
 import java.io.Serializable;

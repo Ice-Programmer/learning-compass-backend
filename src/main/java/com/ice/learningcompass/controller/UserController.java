@@ -1,28 +1,30 @@
 package com.ice.learningcompass.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ice.learningcompass.common.BaseResponse;
+import com.ice.learningcompass.common.DeleteRequest;
 import com.ice.learningcompass.common.ErrorCode;
 import com.ice.learningcompass.common.ResultUtils;
 import com.ice.learningcompass.constant.UserConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
-import com.ice.learningcompass.model.dto.user.UserAddRequest;
-import com.ice.learningcompass.model.dto.user.UserLoginRequest;
-import com.ice.learningcompass.model.dto.user.UserRegisterRequest;
+import com.ice.learningcompass.model.dto.user.*;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.vo.LoginUserVO;
+import com.ice.learningcompass.model.vo.UserVO;
 import com.ice.learningcompass.service.UserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
-import static com.ice.learningcompass.service.impl.UserServiceImpl.SALT;
+import java.util.List;
 
 /**
  * @author <a href="https://github.com/IceProgramer">chenjiahan</a>
@@ -117,6 +119,112 @@ public class UserController {
         Long userId = userService.addUser(userAddRequest);
         return ResultUtils.success(userId);
     }
+
+
+    /**
+     * 删除用户
+     *
+     * @param deleteRequest 删除请求
+     * @return 删除成功
+     */
+    @PostMapping("/delete")
+    @SaCheckRole(UserConstant.SUPER_ADMIN_ROLE)
+    public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest) {
+        if (deleteRequest == null || deleteRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        boolean b = userService.removeById(deleteRequest.getId());
+        return ResultUtils.success(b);
+    }
+
+    /**
+     * 更新用户（超级管理员）
+     *
+     * @param userUpdateRequest 更新用户请求体
+     * @return 更新成功
+     */
+    @PostMapping("/update")
+    @SaCheckRole(UserConstant.SUPER_ADMIN_ROLE)
+    public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest) {
+        if (userUpdateRequest == null || userUpdateRequest.getId() == null || userUpdateRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = new User();
+        BeanUtils.copyProperties(userUpdateRequest, user);
+        boolean result = userService.updateById(user);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(true);
+    }
+
+    /**
+     * 根据 id 获取用户（仅管理员）
+     *
+     * @param id 用户 id
+     * @return 用户信息
+     */
+    @GetMapping("/get")
+    @SaCheckRole(value = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE}, mode = SaMode.OR)
+    public BaseResponse<User> getUserById(long id) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.getById(id);
+        ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR);
+        return ResultUtils.success(user);
+    }
+
+    /**
+     * 根据 id 获取包装类
+     *
+     * @param id 用户 id
+     * @return 用户脱敏信息
+     */
+    @GetMapping("/get/vo")
+    public BaseResponse<UserVO> getUserVOById(long id) {
+        BaseResponse<User> response = getUserById(id);
+        User user = response.getData();
+        return ResultUtils.success(userService.getUserVO(user));
+    }
+
+    /**
+     * 分页获取用户列表（仅管理员）
+     *
+     * @param userQueryRequest 用户分页查询请求
+     * @return 用户分页信息
+     */
+    @PostMapping("/list/page")
+    @SaCheckRole(value = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE}, mode = SaMode.OR)
+    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest) {
+        long current = userQueryRequest.getCurrent();
+        long size = userQueryRequest.getPageSize();
+        Page<User> userPage = userService.page(new Page<>(current, size),
+                userService.getQueryWrapper(userQueryRequest));
+        return ResultUtils.success(userPage);
+    }
+
+    /**
+     * 分页获取用户封装列表
+     *
+     * @param userQueryRequest 用户分页查询请求体
+     * @return 用户封装类分页
+     */
+    @PostMapping("/list/page/vo")
+    public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest userQueryRequest) {
+        if (userQueryRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long current = userQueryRequest.getCurrent();
+        long size = userQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        Page<User> userPage = userService.page(new Page<>(current, size),
+                userService.getQueryWrapper(userQueryRequest));
+        Page<UserVO> userVOPage = new Page<>(current, size, userPage.getTotal());
+        List<UserVO> userVO = userService.getUserVO(userPage.getRecords());
+        userVOPage.setRecords(userVO);
+        return ResultUtils.success(userVOPage);
+    }
+
 
     // endregion
 }

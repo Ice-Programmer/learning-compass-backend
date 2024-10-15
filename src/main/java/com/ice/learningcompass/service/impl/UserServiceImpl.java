@@ -1,29 +1,40 @@
 package com.ice.learningcompass.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ice.learningcompass.common.ErrorCode;
 import com.ice.learningcompass.constant.AvatarDefaultConstant;
+import com.ice.learningcompass.constant.CommonConstant;
 import com.ice.learningcompass.constant.UserConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.model.dto.user.UserAddRequest;
+import com.ice.learningcompass.model.dto.user.UserQueryRequest;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.enums.UserRoleEnum;
 import com.ice.learningcompass.model.vo.LoginUserVO;
+import com.ice.learningcompass.model.vo.UserVO;
 import com.ice.learningcompass.service.UserService;
 import com.ice.learningcompass.mapper.UserMapper;
 import com.ice.learningcompass.utils.DeviceUtils;
+import com.ice.learningcompass.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.ice.learningcompass.constant.UserConstant.USER_LOGIN_STATE;
 
@@ -153,6 +164,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
+    public UserVO getUserVO(User user) {
+        if (user == null) {
+            return null;
+        }
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        return userVO;
+    }
+
+    @Override
+    public List<UserVO> getUserVO(List<User> userList) {
+        if (CollUtil.isEmpty(userList)) {
+            return new ArrayList<>();
+        }
+        return userList.stream().map(this::getUserVO).collect(Collectors.toList());
+
+    }
+
+    @Override
     public Long addUser(UserAddRequest userAddRequest) {
         // 1. 校验
         String userRole = userAddRequest.getUserRole();
@@ -181,6 +211,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         boolean result = this.baseMapper.insert(user) != 0;
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return user.getId();
+    }
+
+    @Override
+    public QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest) {
+        if (userQueryRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+        }
+        Long id = userQueryRequest.getId();
+        List<Long> ids = userQueryRequest.getIds();
+        String userName = userQueryRequest.getUserName();
+        String userAccount = userQueryRequest.getUserAccount();
+        String userProfile = userQueryRequest.getUserProfile();
+        String email = userQueryRequest.getEmail();
+        String userRole = userQueryRequest.getUserRole();
+        String sortField = userQueryRequest.getSortField();
+        String sortOrder = userQueryRequest.getSortOrder();
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(id != null, "id", id);
+        queryWrapper.in(!CollectionUtils.isEmpty(ids), "id", ids);
+        queryWrapper.eq(StringUtils.isNotBlank(userRole), "userRole", userRole);
+        queryWrapper.like(StringUtils.isNotBlank(userProfile), "userProfile", userProfile);
+        queryWrapper.like(StringUtils.isNotBlank(userAccount), "userAccount", userAccount);
+        queryWrapper.like(StringUtils.isNotBlank(email), "email", email);
+        queryWrapper.like(StringUtils.isNotBlank(userName), "userName", userName);
+        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                sortField);
+        return queryWrapper;
     }
 
     /**

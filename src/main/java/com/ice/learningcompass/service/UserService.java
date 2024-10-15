@@ -1,11 +1,17 @@
 package com.ice.learningcompass.service;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ice.learningcompass.model.dto.user.UserAddRequest;
+import com.ice.learningcompass.model.dto.user.UserQueryRequest;
+import com.ice.learningcompass.model.dto.user.UserUpdateRequest;
 import com.ice.learningcompass.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ice.learningcompass.model.vo.LoginUserVO;
+import com.ice.learningcompass.model.vo.UserVO;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @author chenjiahan
@@ -58,10 +64,35 @@ public interface UserService extends IService<User> {
     boolean userLogout();
 
     /**
+     * 获取脱敏的用户信息
+     *
+     * @param user 用户信息
+     * @return 脱敏用户信息
+     */
+    UserVO getUserVO(User user);
+
+    /**
+     * 获取脱敏的用户信息
+     *
+     * @param userList 用户列表
+     * @return 脱敏用户列表
+     */
+    List<UserVO> getUserVO(List<User> userList);
+
+    /**
      * 创建用户（仅超级管理员）
      *
      * @param userAddRequest 用户新增请求
      * @return 用户id
      */
     Long addUser(UserAddRequest userAddRequest);
+
+    /**
+     * 获取查询条件
+     *
+     * @param userQueryRequest 用户分页请求体
+     * @return 查询条件
+     */
+    QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
+
 }
