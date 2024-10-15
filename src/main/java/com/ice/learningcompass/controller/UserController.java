@@ -15,8 +15,6 @@ import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.vo.LoginUserVO;
 import com.ice.learningcompass.model.vo.UserVO;
 import com.ice.learningcompass.service.UserService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -225,6 +223,25 @@ public class UserController {
         return ResultUtils.success(userVOPage);
     }
 
+    /**
+     * 更新个人信息
+     *
+     * @param userUpdateMyRequest 用户更新自己个人信息
+     * @return 更新成功
+     */
+    @PostMapping("/update/my")
+    public BaseResponse<Boolean> updateMyUser(@RequestBody UserUpdateMyRequest userUpdateMyRequest) {
+        if (userUpdateMyRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser();
+        User user = new User();
+        BeanUtils.copyProperties(userUpdateMyRequest, user);
+        user.setId(loginUser.getId());
+        boolean result = userService.updateById(user);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(true);
+    }
 
     // endregion
 }
