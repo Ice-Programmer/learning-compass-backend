@@ -1,20 +1,28 @@
 package com.ice.learningcompass.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.ice.learningcompass.common.BaseResponse;
 import com.ice.learningcompass.common.ErrorCode;
 import com.ice.learningcompass.common.ResultUtils;
+import com.ice.learningcompass.constant.UserConstant;
 import com.ice.learningcompass.exception.BusinessException;
-import com.ice.learningcompass.model.dto.UserLoginRequest;
-import com.ice.learningcompass.model.dto.UserRegisterRequest;
+import com.ice.learningcompass.exception.ThrowUtils;
+import com.ice.learningcompass.model.dto.user.UserAddRequest;
+import com.ice.learningcompass.model.dto.user.UserLoginRequest;
+import com.ice.learningcompass.model.dto.user.UserRegisterRequest;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.vo.LoginUserVO;
 import com.ice.learningcompass.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import static com.ice.learningcompass.service.impl.UserServiceImpl.SALT;
 
 /**
  * @author <a href="https://github.com/IceProgramer">chenjiahan</a>
@@ -92,7 +100,25 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
+    // region 增删改查
 
+    /**
+     * 创建用户（仅超级管理员）
+     *
+     * @param userAddRequest 用户新增请求
+     * @return 用户id
+     */
+    @PostMapping("/add")
+    @SaCheckRole(UserConstant.SUPER_ADMIN_ROLE)
+    public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest) {
+        if (userAddRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Long userId = userService.addUser(userAddRequest);
+        return ResultUtils.success(userId);
+    }
+
+    // endregion
 }
 
 

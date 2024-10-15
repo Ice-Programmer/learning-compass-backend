@@ -1,4 +1,4 @@
-package com.ice.learningcompass.model.dto;
+package com.ice.learningcompass.model.dto.user;
 
 import lombok.Data;
 

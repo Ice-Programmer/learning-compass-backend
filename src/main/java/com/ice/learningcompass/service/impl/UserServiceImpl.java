@@ -10,6 +10,7 @@ import com.ice.learningcompass.constant.AvatarDefaultConstant;
 import com.ice.learningcompass.constant.UserConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
+import com.ice.learningcompass.model.dto.user.UserAddRequest;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.enums.UserRoleEnum;
 import com.ice.learningcompass.model.vo.LoginUserVO;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
+
+import static com.ice.learningcompass.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * @author chenjiahan
@@ -112,6 +115,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 3. 记录用户的登录态
         // 使用 Sa-Token 登陆，并指定设备，同端登陆互斥
         StpUtil.login(user.getId(), DeviceUtils.getRequestDevice(request));
+        StpUtil.getSession().set(USER_LOGIN_STATE, user);
         return this.getLoginUserVO(user);
     }
 
@@ -146,6 +150,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 移除登陆态
         StpUtil.logout();
         return true;
+    }
+
+    @Override
+    public Long addUser(UserAddRequest userAddRequest) {
+        // 1. 校验
+        String userRole = userAddRequest.getUserRole();
+        String userAccount = userAddRequest.getUserAccount();
+        if (!UserRoleEnum.getValues().contains(userRole)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "The user role is invalid!");
+        }
+        if (StringUtils.isBlank(userAccount)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "The user account is empty!");
+        }
+        User user = new User();
+        BeanUtils.copyProperties(userAddRequest, user);
+        // 设置头像
+        if (user.getUserAvatar() == null) {
+            user.setUserAvatar(getRandomAvatar(userRole));
+        }
+        // 设置用户名
+        if (user.getUserName() == null) {
+            String userName = UserConstant.USER_NAME_PREFIX + RandomUtil.randomString(6);
+            user.setUserName(userName);
+        }
+        // 默认密码 12345678
+        String defaultPassword = "12345678";
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + defaultPassword).getBytes());
+        user.setUserPassword(encryptPassword);
+        boolean result = this.baseMapper.insert(user) != 0;
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return user.getId();
     }
 
     /**

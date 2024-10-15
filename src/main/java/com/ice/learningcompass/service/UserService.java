@@ -1,5 +1,6 @@
 package com.ice.learningcompass.service;
 
+import com.ice.learningcompass.model.dto.user.UserAddRequest;
 import com.ice.learningcompass.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ice.learningcompass.model.vo.LoginUserVO;
@@ -55,4 +56,12 @@ public interface UserService extends IService<User> {
      * @return 注销成功
      */
     boolean userLogout();
+
+    /**
+     * 创建用户（仅超级管理员）
+     *
+     * @param userAddRequest 用户新增请求
+     * @return 用户id
+     */
+    Long addUser(UserAddRequest userAddRequest);
 }
