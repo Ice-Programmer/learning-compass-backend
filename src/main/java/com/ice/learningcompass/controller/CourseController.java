@@ -1,6 +1,8 @@
 package com.ice.learningcompass.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ice.learningcompass.common.BaseResponse;
 import com.ice.learningcompass.common.DeleteRequest;
 import com.ice.learningcompass.common.ErrorCode;
@@ -10,6 +12,8 @@ import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
 import com.ice.learningcompass.model.dto.course.CourseEditRequest;
+import com.ice.learningcompass.model.dto.course.CourseQueryRequest;
+import com.ice.learningcompass.model.entity.Course;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.vo.CourseVO;
 import com.ice.learningcompass.service.CourseService;
@@ -114,4 +118,19 @@ public class CourseController {
         return ResultUtils.success(courseVO);
     }
 
+    /**
+     * 分页获取课程列表（仅管理员）
+     *
+     * @param courseQueryRequest 课程查询请求
+     * @return 课程分页
+     */
+    @PostMapping("/list/page")
+    @SaCheckRole(value = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE}, mode = SaMode.OR)
+    public BaseResponse<Page<Course>> listPostByPage(@RequestBody CourseQueryRequest courseQueryRequest) {
+        long current = courseQueryRequest.getCurrent();
+        long size = courseQueryRequest.getPageSize();
+        Page<Course> coursePage = courseService.page(new Page<>(current, size),
+                courseService.getQueryWrapper(courseQueryRequest));
+        return ResultUtils.success(coursePage);
+    }
 }

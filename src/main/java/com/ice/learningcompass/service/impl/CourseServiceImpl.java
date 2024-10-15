@@ -1,21 +1,27 @@
 package com.ice.learningcompass.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ice.learningcompass.common.ErrorCode;
+import com.ice.learningcompass.constant.CommonConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.mapper.UserMapper;
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
 import com.ice.learningcompass.model.dto.course.CourseEditRequest;
+import com.ice.learningcompass.model.dto.course.CourseQueryRequest;
 import com.ice.learningcompass.model.entity.Course;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.vo.CourseVO;
 import com.ice.learningcompass.model.vo.UserVO;
 import com.ice.learningcompass.service.CourseService;
 import com.ice.learningcompass.mapper.CourseMapper;
+import com.ice.learningcompass.utils.SqlUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -115,6 +121,40 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
         courseVO.setTeacherInfo(teacherInfo);
 
         return courseVO;
+    }
+
+    @Override
+    public QueryWrapper<Course> getQueryWrapper(CourseQueryRequest courseQueryRequest) {
+        QueryWrapper<Course> queryWrapper = new QueryWrapper<>();
+        if (courseQueryRequest == null) {
+            return queryWrapper;
+        }
+        String searchText = courseQueryRequest.getSearchText();
+        String sortField = courseQueryRequest.getSortField();
+        String sortOrder = courseQueryRequest.getSortOrder();
+        Long id = courseQueryRequest.getId();
+        String name = courseQueryRequest.getName();
+        String description = courseQueryRequest.getDescription();
+        List<String> tagList = courseQueryRequest.getTags();
+        Long teacherId = courseQueryRequest.getTeacherId();
+        Long notId = courseQueryRequest.getNotId();
+        // 拼接查询条件
+        if (StringUtils.isNotBlank(searchText)) {
+            queryWrapper.and(qw -> qw.like("name", searchText).or().like("description", searchText));
+        }
+        queryWrapper.like(StringUtils.isNotBlank(name), "title", name);
+        queryWrapper.like(StringUtils.isNotBlank(description), "description", description);
+        if (CollUtil.isNotEmpty(tagList)) {
+            for (String tag : tagList) {
+                queryWrapper.like("tags", "\"" + tag + "\"");
+            }
+        }
+        queryWrapper.ne(ObjectUtils.isNotEmpty(notId), "id", notId);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(teacherId), "teacherId", teacherId);
+        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                sortField);
+        return queryWrapper;
     }
 
     private void validCourse(Course course, boolean add) {
