@@ -10,6 +10,11 @@ public interface UserConstant {
      */
     String USER_LOGIN_STATE = "user_login";
 
+    /**
+     * 用户名前缀
+     */
+    String USER_NAME_PREFIX = "user_";
+
     //  region 权限
 
     /**
@@ -26,6 +31,11 @@ public interface UserConstant {
      * 管理员角色
      */
     String ADMIN_ROLE = "admin";
+
+    /**
+     * 超级管理员身份
+     */
+    String SUPER_ADMIN_ROLE = "super-admin";
 
     /**
      * 被封号

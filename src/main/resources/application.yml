@@ -35,8 +35,7 @@ mybatis-plus:
       logic-not-delete-value: 0   # 逻辑未删除值(默认为 0)
 # 接口文档配置
 knife4j:
-  basic:
-    enable: true
+  enable: true
   setting:
     language: en
   openapi:
