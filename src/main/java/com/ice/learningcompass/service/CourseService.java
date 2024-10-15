@@ -2,6 +2,7 @@ package com.ice.learningcompass.service;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
 import com.ice.learningcompass.model.dto.course.CourseEditRequest;
 import com.ice.learningcompass.model.dto.course.CourseQueryRequest;
@@ -58,4 +59,12 @@ public interface CourseService extends IService<Course> {
      * @return 查询条件
      */
     QueryWrapper<Course> getQueryWrapper(CourseQueryRequest courseQueryRequest);
+
+    /**
+     * 分页获取课程封装类
+     *
+     * @param courseQueryRequest 课程查询请求
+     * @return 课程封装类分页
+     */
+    Page<CourseVO> pageCourseVO(CourseQueryRequest courseQueryRequest);
 }

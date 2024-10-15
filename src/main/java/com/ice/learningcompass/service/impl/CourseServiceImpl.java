@@ -3,6 +3,7 @@ package com.ice.learningcompass.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -31,6 +32,9 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author chenjiahan
@@ -155,6 +159,43 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
         return queryWrapper;
+    }
+
+    @Override
+    public Page<CourseVO> pageCourseVO(CourseQueryRequest courseQueryRequest) {
+        long current = courseQueryRequest.getCurrent();
+        long size = courseQueryRequest.getPageSize();
+
+        // 获取课程分页
+        Page<Course> coursePage = baseMapper.selectPage(new Page<>(current, size),
+                getQueryWrapper(courseQueryRequest));
+
+        List<Course> courseList = coursePage.getRecords();
+        // 获取所有创建教师 id
+        Set<Long> teacherIds = courseList.stream()
+                .map(Course::getTeacherId)
+                .collect(Collectors.toSet());
+
+        // 获取所有教师 信息
+        List<User> teacherList = userMapper.selectList(Wrappers.<User>lambdaQuery()
+                .in(User::getId, teacherIds));
+        // 获取教师信息 map 【teacherId -> teacherInfo】
+        Map<Long, UserVO> teacherInfoMap = teacherList.stream()
+                .map(UserVO::objToVo)
+                .collect(Collectors.toMap(UserVO::getId, user -> user));
+
+        // 封装包装类
+        List<CourseVO> courseVOList = courseList.stream().map(course -> {
+            CourseVO courseVO = CourseVO.objToVo(course);
+            courseVO.setTeacherInfo(teacherInfoMap.get(course.getTeacherId()));
+            return courseVO;
+        }).collect(Collectors.toList());
+
+        Page<CourseVO> courseVOPage = new Page<>(coursePage.getCurrent(), coursePage.getSize(), coursePage.getTotal());
+
+        courseVOPage.setRecords(courseVOList);
+
+        return courseVOPage;
     }
 
     private void validCourse(Course course, boolean add) {

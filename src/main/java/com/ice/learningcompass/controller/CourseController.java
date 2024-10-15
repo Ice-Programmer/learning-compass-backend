@@ -126,11 +126,24 @@ public class CourseController {
      */
     @PostMapping("/list/page")
     @SaCheckRole(value = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE}, mode = SaMode.OR)
-    public BaseResponse<Page<Course>> listPostByPage(@RequestBody CourseQueryRequest courseQueryRequest) {
+    public BaseResponse<Page<Course>> pageCourse(@RequestBody CourseQueryRequest courseQueryRequest) {
         long current = courseQueryRequest.getCurrent();
         long size = courseQueryRequest.getPageSize();
         Page<Course> coursePage = courseService.page(new Page<>(current, size),
                 courseService.getQueryWrapper(courseQueryRequest));
         return ResultUtils.success(coursePage);
+    }
+
+    /**
+     * 分页获取课程封装类
+     *
+     * @param courseQueryRequest 课程查询请求
+     * @return 课程封装类分页
+     */
+    @PostMapping("/list/page/vo")
+    public BaseResponse<Page<CourseVO>> pageCourseVO(@RequestBody CourseQueryRequest courseQueryRequest) {
+        Page<CourseVO> courseVOPage = courseService.pageCourseVO(courseQueryRequest);
+
+        return ResultUtils.success(courseVOPage);
     }
 }
