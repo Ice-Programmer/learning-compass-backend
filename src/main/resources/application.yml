@@ -17,6 +17,10 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
+  redis:
+    database: 1
+    host: 127.0.0.1
+    port: 6379
 # 后端服务器设置
 server:
   address: 0.0.0.0
