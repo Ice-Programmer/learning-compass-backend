@@ -2,6 +2,9 @@ package com.ice.learningcompass.service;
 
 import com.ice.learningcompass.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ice.learningcompass.model.vo.LoginUserVO;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author chenjiahan
@@ -20,4 +23,29 @@ public interface UserService extends IService<User> {
      * @return 新用户 id
      */
     Long userRegister(String userAccount, String userPassword, String checkPassword, String userRole);
+
+    /**
+     * 用户登录
+     *
+     * @param userAccount  用户账户
+     * @param userPassword 用户密码
+     * @param request      session
+     * @return 脱敏后的用户信息
+     */
+    LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request);
+
+
+    /**
+     * 获取脱敏的已登录用户信息
+     *
+     * @return 脱敏的已登录用户信息
+     */
+    LoginUserVO getLoginUserVO(User user);
+
+    /**
+     * 获取当前登录用户
+     *
+     * @return 当前登陆用户信息
+     */
+    User getLoginUser();
 }
