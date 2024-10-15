@@ -1,12 +1,15 @@
 package com.ice.learningcompass.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import com.ice.learningcompass.common.BaseResponse;
 import com.ice.learningcompass.common.ErrorCode;
 import com.ice.learningcompass.common.ResultUtils;
 import com.ice.learningcompass.constant.UserConstant;
 import com.ice.learningcompass.exception.BusinessException;
+import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
+import com.ice.learningcompass.model.dto.course.CourseEditRequest;
 import com.ice.learningcompass.model.entity.Course;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.service.CourseService;
@@ -53,5 +56,27 @@ public class CourseController {
         Long courseId = courseService.addCourse(courseAddRequest, loginUser.getId());
 
         return ResultUtils.success(courseId);
+    }
+
+
+    /**
+     * 编辑课程信息
+     *
+     * @param courseEditRequest 课程编辑请求体
+     * @return 编辑成功
+     */
+    @PostMapping("/edit")
+    @SaCheckRole(value = {UserConstant.TEACHER_ROLE})
+    BaseResponse<Boolean> editCourse(@RequestBody CourseEditRequest courseEditRequest) {
+        ThrowUtils.throwIf(courseEditRequest == null, ErrorCode.PARAMS_ERROR);
+        if (courseEditRequest.getId() == null || courseEditRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Course Id error!");
+        }
+        // 获取当前登陆用户
+        User loginUser = userService.getLoginUser();
+
+        Boolean result = courseService.editCourse(courseEditRequest, loginUser.getId());
+
+        return ResultUtils.success(result);
     }
 }

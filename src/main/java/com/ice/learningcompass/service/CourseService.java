@@ -1,6 +1,7 @@
 package com.ice.learningcompass.service;
 
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
+import com.ice.learningcompass.model.dto.course.CourseEditRequest;
 import com.ice.learningcompass.model.entity.Course;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -19,4 +20,13 @@ public interface CourseService extends IService<Course> {
      * @return 课程id
      */
     Long addCourse(CourseAddRequest courseAddRequest, Long teacherId);
+
+    /**
+     * 编辑课程信息
+     *
+     * @param courseEditRequest 课程编辑请求体
+     * @param teacherId         教师id
+     * @return 编辑成功
+     */
+    Boolean editCourse(CourseEditRequest courseEditRequest, Long teacherId);
 }

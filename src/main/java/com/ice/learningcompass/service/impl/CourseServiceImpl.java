@@ -1,5 +1,6 @@
 package com.ice.learningcompass.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -7,6 +8,7 @@ import com.ice.learningcompass.common.ErrorCode;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
+import com.ice.learningcompass.model.dto.course.CourseEditRequest;
 import com.ice.learningcompass.model.entity.Course;
 import com.ice.learningcompass.service.CourseService;
 import com.ice.learningcompass.mapper.CourseMapper;
@@ -45,6 +47,29 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
         boolean result = baseMapper.insert(course) != 0;
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return course.getId();
+    }
+
+    @Override
+    public Boolean editCourse(CourseEditRequest courseEditRequest, Long teacherId) {
+        // 判断课程是否存在
+        boolean exists = baseMapper.exists(Wrappers.<Course>lambdaQuery()
+                .eq(Course::getId, courseEditRequest.getId())
+                .eq(Course::getTeacherId, teacherId));
+        ThrowUtils.throwIf(!exists, ErrorCode.NOT_FOUND_ERROR, "Course not exists！");
+
+        // 校验参数
+        Course course = new Course();
+        validCourse(course, false);
+        List<String> tagList = courseEditRequest.getTagList();
+        if (!CollectionUtils.isEmpty(tagList)) {
+            String tags = GSON.toJson(tagList);
+            course.setTags(tags);
+        }
+
+        // 更新数据库
+        baseMapper.updateById(course);
+
+        return true;
     }
 
     private void validCourse(Course course, boolean add) {
