@@ -140,6 +140,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return currentUser;
     }
 
+    @Override
+    public boolean userLogout() {
+        StpUtil.checkLogin();
+        // 移除登陆态
+        StpUtil.logout();
+        return true;
+    }
+
     /**
      * 生成随机头像
      *

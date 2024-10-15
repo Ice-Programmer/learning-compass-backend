@@ -81,6 +81,18 @@ public class UserController {
         return ResultUtils.success(userService.getLoginUserVO(user));
     }
 
+    /**
+     * 用户注销
+     *
+     * @return 用户注销成功
+     */
+    @PostMapping("/logout")
+    public BaseResponse<Boolean> userLogout() {
+        boolean result = userService.userLogout();
+        return ResultUtils.success(result);
+    }
+
+
 }
 
 

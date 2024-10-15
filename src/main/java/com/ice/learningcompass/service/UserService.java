@@ -48,4 +48,11 @@ public interface UserService extends IService<User> {
      * @return 当前登陆用户信息
      */
     User getLoginUser();
+
+    /**
+     * 用户注销
+     *
+     * @return 注销成功
+     */
+    boolean userLogout();
 }
