@@ -7,9 +7,13 @@ import com.google.gson.reflect.TypeToken;
 import com.ice.learningcompass.common.ErrorCode;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
+import com.ice.learningcompass.mapper.UserMapper;
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
 import com.ice.learningcompass.model.dto.course.CourseEditRequest;
 import com.ice.learningcompass.model.entity.Course;
+import com.ice.learningcompass.model.entity.User;
+import com.ice.learningcompass.model.vo.CourseVO;
+import com.ice.learningcompass.model.vo.UserVO;
 import com.ice.learningcompass.service.CourseService;
 import com.ice.learningcompass.mapper.CourseMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +34,9 @@ import java.util.List;
 @Service
 public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
         implements CourseService {
+
+    @Resource
+    private UserMapper userMapper;
 
     private final static Gson GSON = new Gson();
 
@@ -90,6 +98,23 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
         // todo 删除课程资料
 
         return true;
+    }
+
+    @Override
+    public CourseVO getCourseVO(long id) {
+        // 查询课程信息
+        Course course = baseMapper.selectById(id);
+        ThrowUtils.throwIf(course == null, ErrorCode.NOT_FOUND_ERROR, "Course not exists");
+        CourseVO courseVO = CourseVO.objToVo(course);
+
+        // 获取教师信息
+        Long teacherId = course.getTeacherId();
+        User user = userMapper.selectOne(Wrappers.<User>lambdaQuery()
+                .eq(User::getId, teacherId));
+        UserVO teacherInfo = UserVO.objToVo(user);
+        courseVO.setTeacherInfo(teacherInfo);
+
+        return courseVO;
     }
 
     private void validCourse(Course course, boolean add) {

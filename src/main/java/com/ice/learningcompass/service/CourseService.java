@@ -4,6 +4,7 @@ import com.ice.learningcompass.model.dto.course.CourseAddRequest;
 import com.ice.learningcompass.model.dto.course.CourseEditRequest;
 import com.ice.learningcompass.model.entity.Course;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ice.learningcompass.model.vo.CourseVO;
 
 /**
  * @author chenjiahan
@@ -38,4 +39,12 @@ public interface CourseService extends IService<Course> {
      * @return 解散成功
      */
     Boolean disbandCourse(Long courseId, Long teacherId);
+
+    /**
+     * 根据 Id 获取课程包装类
+     *
+     * @param id 课程 id
+     * @return 课程包装类
+     */
+    CourseVO getCourseVO(long id);
 }

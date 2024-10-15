@@ -1,8 +1,6 @@
 package com.ice.learningcompass.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
-import cn.dev33.satoken.annotation.SaMode;
-import cn.dev33.satoken.stp.StpUtil;
 import com.ice.learningcompass.common.BaseResponse;
 import com.ice.learningcompass.common.DeleteRequest;
 import com.ice.learningcompass.common.ErrorCode;
@@ -12,15 +10,12 @@ import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
 import com.ice.learningcompass.model.dto.course.CourseEditRequest;
-import com.ice.learningcompass.model.entity.Course;
 import com.ice.learningcompass.model.entity.User;
+import com.ice.learningcompass.model.vo.CourseVO;
 import com.ice.learningcompass.service.CourseService;
 import com.ice.learningcompass.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -49,7 +44,7 @@ public class CourseController {
      */
     @PostMapping("/add")
     @SaCheckRole(UserConstant.TEACHER_ROLE)
-    BaseResponse<Long> addCourse(@RequestBody CourseAddRequest courseAddRequest) {
+    public BaseResponse<Long> addCourse(@RequestBody CourseAddRequest courseAddRequest) {
         if (courseAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -69,7 +64,7 @@ public class CourseController {
      */
     @PostMapping("/edit")
     @SaCheckRole(value = {UserConstant.TEACHER_ROLE})
-    BaseResponse<Boolean> editCourse(@RequestBody CourseEditRequest courseEditRequest) {
+    public BaseResponse<Boolean> editCourse(@RequestBody CourseEditRequest courseEditRequest) {
         ThrowUtils.throwIf(courseEditRequest == null, ErrorCode.PARAMS_ERROR);
         if (courseEditRequest.getId() == null || courseEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Course Id error!");
@@ -90,7 +85,7 @@ public class CourseController {
      */
     @PostMapping("/delete")
     @SaCheckRole(value = {UserConstant.TEACHER_ROLE})
-    BaseResponse<Boolean> disbandCourse(DeleteRequest deleteRequest) {
+    public BaseResponse<Boolean> disbandCourse(DeleteRequest deleteRequest) {
         if (deleteRequest.getId() == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -101,4 +96,22 @@ public class CourseController {
 
         return ResultUtils.success(result);
     }
+
+    /**
+     * 获取课程包装类信息
+     *
+     * @param id 课程 id
+     * @return 课程包装类
+     */
+    @GetMapping("/get/vo")
+    public BaseResponse<CourseVO> getCourseVOById(long id) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        CourseVO courseVO = courseService.getCourseVO(id);
+
+        return ResultUtils.success(courseVO);
+    }
+
 }
