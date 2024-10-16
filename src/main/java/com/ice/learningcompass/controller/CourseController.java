@@ -13,6 +13,7 @@ import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
 import com.ice.learningcompass.model.dto.course.CourseEditRequest;
 import com.ice.learningcompass.model.dto.course.CourseQueryRequest;
+import com.ice.learningcompass.model.dto.course.CourseUpdateRequest;
 import com.ice.learningcompass.model.entity.Course;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.vo.CourseVO;
@@ -145,5 +146,24 @@ public class CourseController {
         Page<CourseVO> courseVOPage = courseService.pageCourseVO(courseQueryRequest);
 
         return ResultUtils.success(courseVOPage);
+    }
+
+    /**
+     * 管理员更新课程状态
+     *
+     * @param courseUpdateRequest 课程更新请求
+     * @return 更新成功
+     */
+    @PostMapping("/update")
+    @SaCheckRole(value = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE}, mode = SaMode.OR)
+    public BaseResponse<Boolean> updateCourse(@RequestBody CourseUpdateRequest courseUpdateRequest) {
+        ThrowUtils.throwIf(courseUpdateRequest == null, ErrorCode.PARAMS_ERROR);
+        if (courseUpdateRequest.getId() == null || courseUpdateRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Course Id error!");
+        }
+
+        Boolean result = courseService.updateCourse(courseUpdateRequest);
+
+        return ResultUtils.success(result);
     }
 }

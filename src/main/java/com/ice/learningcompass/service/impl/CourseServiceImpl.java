@@ -6,21 +6,22 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.ice.learningcompass.common.ErrorCode;
 import com.ice.learningcompass.constant.CommonConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
+import com.ice.learningcompass.mapper.CourseMapper;
 import com.ice.learningcompass.mapper.UserMapper;
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
 import com.ice.learningcompass.model.dto.course.CourseEditRequest;
 import com.ice.learningcompass.model.dto.course.CourseQueryRequest;
+import com.ice.learningcompass.model.dto.course.CourseUpdateRequest;
 import com.ice.learningcompass.model.entity.Course;
 import com.ice.learningcompass.model.entity.User;
+import com.ice.learningcompass.model.enums.StatusTypeEnum;
 import com.ice.learningcompass.model.vo.CourseVO;
 import com.ice.learningcompass.model.vo.UserVO;
 import com.ice.learningcompass.service.CourseService;
-import com.ice.learningcompass.mapper.CourseMapper;
 import com.ice.learningcompass.utils.SqlUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -78,6 +79,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
 
         // 校验参数
         Course course = new Course();
+        BeanUtils.copyProperties(courseEditRequest, course);
         validCourse(course, false);
         List<String> tagList = courseEditRequest.getTagList();
         if (!CollectionUtils.isEmpty(tagList)) {
@@ -198,6 +200,30 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
         return courseVOPage;
     }
 
+    @Override
+    public Boolean updateCourse(CourseUpdateRequest courseUpdateRequest) {
+        // 判断课程是否存在
+        boolean exists = baseMapper.exists(Wrappers.<Course>lambdaQuery()
+                .eq(Course::getId, courseUpdateRequest.getId()));
+        ThrowUtils.throwIf(!exists, ErrorCode.NOT_FOUND_ERROR, "Course not exists！");
+
+        // 校验参数
+        Course course = new Course();
+        BeanUtils.copyProperties(courseUpdateRequest, course);
+        validCourse(course, false);
+        List<String> tagList = courseUpdateRequest.getTagList();
+        if (!CollectionUtils.isEmpty(tagList)) {
+            String tags = GSON.toJson(tagList);
+            course.setTags(tags);
+        }
+
+
+        // 更新数据库
+        baseMapper.updateById(course);
+
+        return true;
+    }
+
     private void validCourse(Course course, boolean add) {
         if (course == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Course cannot be null");
@@ -206,6 +232,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
         String description = course.getDescription();
         String tags = course.getTags();
         Long teacherId = course.getTeacherId();
+        Integer status = course.getStatus();
         Date startTime = course.getStartTime();
         Date endTime = course.getEndTime();
 
@@ -227,6 +254,9 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
         }
         if (startTime != null && endTime != null && startTime.after(endTime)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Start time cannot be after end time");
+        }
+        if (status != null && !StatusTypeEnum.getValues().contains(status)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Status is only 0 or 1");
         }
     }
 }

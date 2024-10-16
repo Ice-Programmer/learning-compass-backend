@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
 import com.ice.learningcompass.model.dto.course.CourseEditRequest;
 import com.ice.learningcompass.model.dto.course.CourseQueryRequest;
+import com.ice.learningcompass.model.dto.course.CourseUpdateRequest;
 import com.ice.learningcompass.model.entity.Course;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ice.learningcompass.model.vo.CourseVO;
@@ -67,4 +68,12 @@ public interface CourseService extends IService<Course> {
      * @return 课程封装类分页
      */
     Page<CourseVO> pageCourseVO(CourseQueryRequest courseQueryRequest);
+
+    /**
+     * 管理员更新课程状态
+     *
+     * @param courseUpdateRequest 课程更新请求
+     * @return 更新成功
+     */
+    Boolean updateCourse(CourseUpdateRequest courseUpdateRequest);
 }
