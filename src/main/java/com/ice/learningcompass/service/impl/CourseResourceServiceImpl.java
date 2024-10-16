@@ -16,7 +16,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -55,6 +54,25 @@ public class CourseResourceServiceImpl extends ServiceImpl<CourseResourceMapper,
         baseMapper.insert(courseResource);
 
         return courseResource.getId();
+    }
+
+    @Override
+    public Boolean deleteCourseResource(Long resourceId, Long teacherId) {
+        // 判断课程是否存在
+        CourseResource courseResource = baseMapper.selectOne(Wrappers.<CourseResource>lambdaQuery()
+                .eq(CourseResource::getId, resourceId)
+                .select(CourseResource::getTeacherId)
+                .last("limit 1"));
+        ThrowUtils.throwIf(courseResource == null, ErrorCode.NOT_FOUND_ERROR, "Resource Not Fount!");
+        if (!courseResource.getTeacherId().equals(teacherId)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "Only Resources can be deleted from self-created resource!");
+        }
+
+        baseMapper.deleteById(resourceId);
+
+        // todo 删除学生浏览记录
+
+        return true;
     }
 
     private void validCourseResource(CourseResource courseResource) {

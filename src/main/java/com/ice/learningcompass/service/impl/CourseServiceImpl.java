@@ -11,6 +11,7 @@ import com.ice.learningcompass.constant.CommonConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.mapper.CourseMapper;
+import com.ice.learningcompass.mapper.CourseResourceMapper;
 import com.ice.learningcompass.mapper.CourseStudentMapper;
 import com.ice.learningcompass.mapper.UserMapper;
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
@@ -18,6 +19,7 @@ import com.ice.learningcompass.model.dto.course.CourseEditRequest;
 import com.ice.learningcompass.model.dto.course.CourseQueryRequest;
 import com.ice.learningcompass.model.dto.course.CourseUpdateRequest;
 import com.ice.learningcompass.model.entity.Course;
+import com.ice.learningcompass.model.entity.CourseResource;
 import com.ice.learningcompass.model.entity.CourseStudent;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.enums.StatusTypeEnum;
@@ -55,6 +57,9 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
 
     @Resource
     private CourseStudentMapper courseStudentMapper;
+
+    @Resource
+    private CourseResourceMapper courseResourceMapper;
 
     private final static Gson GSON = new Gson();
 
@@ -118,7 +123,12 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
                 .eq(CourseStudent::getCourseId, courseId));
         log.info("Successfully deleted {} student-course records for course {}", deleteCourseStudentRows, courseId);
 
-        // todo 删除课程资料
+        // 删除课程资料
+        int deleteResourceRows = courseResourceMapper.delete(Wrappers.<CourseResource>lambdaQuery()
+                .eq(CourseResource::getCourseId, courseId));
+        log.info("Successfully deleted {} course resources for course {}", deleteResourceRows, courseId);
+
+        // todo 删除课程浏览记录
 
         return true;
     }

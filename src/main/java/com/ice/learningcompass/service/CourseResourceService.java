@@ -16,7 +16,16 @@ public interface CourseResourceService extends IService<CourseResource> {
      *
      * @param courseResourceAddRequest 添加课程资料请求
      * @param teacherId                教师 id
-     * @return
+     * @return 课程资料 id
      */
     Long addCourseResource(CourseResourceAddRequest courseResourceAddRequest, Long teacherId);
+
+    /**
+     * 删除课程资料
+     *
+     * @param resourceId 资料 id
+     * @param teacherId  教师 id
+     * @return
+     */
+    Boolean deleteCourseResource(Long resourceId, Long teacherId);
 }
