@@ -7,7 +7,7 @@ import com.ice.learningcompass.common.ResultUtils;
 import com.ice.learningcompass.constant.UserConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
-import com.ice.learningcompass.model.dto.studentcourse.StudentJoinCourseRequest;
+import com.ice.learningcompass.model.dto.coursestudent.StudentJoinCourseRequest;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.service.CourseStudentService;
 import com.ice.learningcompass.service.UserService;
@@ -52,6 +52,8 @@ public class CourseStudentController {
         User loginUser = userService.getLoginUser();
 
         Long joinId = courseStudentService.studentJoinCourse(courseId, loginUser.getId());
+
+        // todo 发布邮件给教师 「学生加入课程」
 
         return ResultUtils.success(joinId);
     }

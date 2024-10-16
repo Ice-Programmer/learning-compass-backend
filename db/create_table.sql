@@ -59,7 +59,7 @@ create table if not exists `course_student`
 ) comment '课程' collate = utf8mb4_unicode_ci;
 
 -- 课程资料表
-create table if not exists `resource_student`
+create table if not exists `course_resource`
 (
     `id`           bigint auto_increment comment 'id' primary key,
     `teacherId`    bigint                             not null comment '创建教师 id',
@@ -73,11 +73,12 @@ create table if not exists `resource_student`
 ) comment '课程资料' collate = utf8mb4_unicode_ci;
 
 -- 学生资料查看记录表
-create table if not exists `course_resource`
+create table if not exists `resource_student`
 (
     `id`         bigint auto_increment comment 'id' primary key,
     `resourceId` bigint                             not null comment '资料 id',
     `studentId`  bigint                             not null comment '查看学生 id',
+    `viewNum`    int      default 0                 not null comment '查看次数',
     `viewTime`   datetime default CURRENT_TIMESTAMP not null comment '查看时间',
     `createTime` datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     `updateTime` datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
