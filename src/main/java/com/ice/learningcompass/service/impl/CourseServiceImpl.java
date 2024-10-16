@@ -11,18 +11,21 @@ import com.ice.learningcompass.constant.CommonConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.mapper.CourseMapper;
+import com.ice.learningcompass.mapper.CourseStudentMapper;
 import com.ice.learningcompass.mapper.UserMapper;
 import com.ice.learningcompass.model.dto.course.CourseAddRequest;
 import com.ice.learningcompass.model.dto.course.CourseEditRequest;
 import com.ice.learningcompass.model.dto.course.CourseQueryRequest;
 import com.ice.learningcompass.model.dto.course.CourseUpdateRequest;
 import com.ice.learningcompass.model.entity.Course;
+import com.ice.learningcompass.model.entity.CourseStudent;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.enums.StatusTypeEnum;
 import com.ice.learningcompass.model.vo.CourseVO;
 import com.ice.learningcompass.model.vo.UserVO;
 import com.ice.learningcompass.service.CourseService;
 import com.ice.learningcompass.utils.SqlUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -43,11 +46,15 @@ import java.util.stream.Collectors;
  * @createDate 2024-10-15 13:19:27
  */
 @Service
+@Slf4j
 public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
         implements CourseService {
 
     @Resource
     private UserMapper userMapper;
+
+    @Resource
+    private CourseStudentMapper courseStudentMapper;
 
     private final static Gson GSON = new Gson();
 
@@ -104,8 +111,12 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
 
         // 删除课程
         baseMapper.deleteById(courseId);
+        log.info("Successfully deleted course with id {}", courseId);
 
-        // todo 删除上课学生
+        // 删除上课学生
+        int deleteCourseStudentRows = courseStudentMapper.delete(Wrappers.<CourseStudent>lambdaQuery()
+                .eq(CourseStudent::getCourseId, courseId));
+        log.info("Successfully deleted {} student-course records for course {}", deleteCourseStudentRows, courseId);
 
         // todo 删除课程资料
 
