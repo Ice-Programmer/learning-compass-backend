@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ice.learningcompass.mapper.CourseStudentMapper">
+
+    <resultMap id="BaseResultMap" type="com.ice.learningcompass.model.entity.CourseStudent">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="studentId" column="studentId" jdbcType="BIGINT"/>
+            <result property="courseId" column="courseId" jdbcType="BIGINT"/>
+            <result property="grade" column="grade" jdbcType="INTEGER"/>
+            <result property="process" column="process" jdbcType="INTEGER"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,studentId,courseId,
+        grade,process,createTime,
+        updateTime,isDelete
+    </sql>
+</mapper>
