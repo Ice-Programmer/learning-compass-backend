@@ -1,6 +1,7 @@
 package com.ice.learningcompass.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import com.ice.learningcompass.common.BaseResponse;
 import com.ice.learningcompass.common.DeleteRequest;
 import com.ice.learningcompass.common.ErrorCode;
@@ -11,6 +12,7 @@ import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.model.dto.courseresource.CourseResourceAddRequest;
 import com.ice.learningcompass.model.entity.CourseResource;
 import com.ice.learningcompass.model.entity.User;
+import com.ice.learningcompass.model.enums.UserRoleEnum;
 import com.ice.learningcompass.service.CourseResourceService;
 import com.ice.learningcompass.service.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,8 +62,8 @@ public class CourseResourceController {
      * @return 删除成功
      */
     @PostMapping("/delete")
-    @SaCheckRole(UserConstant.TEACHER_ROLE)
-    public BaseResponse<Boolean> deleteCourse(DeleteRequest deleteRequest) {
+    @SaCheckRole(value = {UserConstant.TEACHER_ROLE, UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE}, mode = SaMode.OR)
+    public BaseResponse<Boolean> deleteCourse(@RequestBody DeleteRequest deleteRequest) {
         ThrowUtils.throwIf(deleteRequest == null, ErrorCode.PARAMS_ERROR);
         Long resourceId = deleteRequest.getId();
         if (resourceId == null || resourceId <= 0) {
@@ -71,7 +73,7 @@ public class CourseResourceController {
         // 获取当前登录用户
         User loginUser = userService.getLoginUser();
 
-        Boolean result = courseResourceService.deleteCourseResource(resourceId, loginUser.getId());
+        Boolean result = courseResourceService.deleteCourseResource(resourceId, loginUser);
 
         return ResultUtils.success(result);
     }

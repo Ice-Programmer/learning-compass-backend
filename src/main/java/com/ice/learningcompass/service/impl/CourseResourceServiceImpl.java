@@ -3,12 +3,14 @@ package com.ice.learningcompass.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ice.learningcompass.common.ErrorCode;
+import com.ice.learningcompass.constant.UserConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.mapper.CourseMapper;
 import com.ice.learningcompass.model.dto.courseresource.CourseResourceAddRequest;
 import com.ice.learningcompass.model.entity.Course;
 import com.ice.learningcompass.model.entity.CourseResource;
+import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.service.CourseResourceService;
 import com.ice.learningcompass.mapper.CourseResourceMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -57,14 +59,18 @@ public class CourseResourceServiceImpl extends ServiceImpl<CourseResourceMapper,
     }
 
     @Override
-    public Boolean deleteCourseResource(Long resourceId, Long teacherId) {
+    public Boolean deleteCourseResource(Long resourceId, User loginUser) {
         // 判断课程是否存在
         CourseResource courseResource = baseMapper.selectOne(Wrappers.<CourseResource>lambdaQuery()
                 .eq(CourseResource::getId, resourceId)
                 .select(CourseResource::getTeacherId)
                 .last("limit 1"));
         ThrowUtils.throwIf(courseResource == null, ErrorCode.NOT_FOUND_ERROR, "Resource Not Fount!");
-        if (!courseResource.getTeacherId().equals(teacherId)) {
+
+        // 如果当前用户是教师，判断课程是否为该教师创建
+        String userRole = loginUser.getUserRole();
+        if (UserConstant.TEACHER_ROLE.equals(userRole) &&
+                !courseResource.getTeacherId().equals(loginUser.getId())) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "Only Resources can be deleted from self-created resource!");
         }
 
