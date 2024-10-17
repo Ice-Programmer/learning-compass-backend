@@ -79,9 +79,10 @@ create table if not exists `resource_student`
     `resourceId` bigint                             not null comment '资料 id',
     `studentId`  bigint                             not null comment '查看学生 id',
     `viewNum`    int      default 0                 not null comment '查看次数',
-    `viewTime`   datetime default CURRENT_TIMESTAMP not null comment '查看时间',
+    `viewTime`   datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '查看时间',
     `createTime` datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     `updateTime` datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     `isDelete`   tinyint  default 0                 not null comment '是否删除',
-    index idx_studentId (studentId)
+    index idx_studentId (studentId),
+    UNIQUE (resourceId, studentId)
 ) comment '学生资料查看记录' collate = utf8mb4_unicode_ci;

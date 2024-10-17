@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ice.learningcompass.mapper.ResourceStudentMapper">
+
+    <resultMap id="BaseResultMap" type="com.ice.learningcompass.model.entity.ResourceStudent">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="resourceId" column="resourceId" jdbcType="BIGINT"/>
+            <result property="studentId" column="studentId" jdbcType="BIGINT"/>
+            <result property="viewNum" column="viewNum" jdbcType="INTEGER"/>
+            <result property="viewTime" column="viewTime" jdbcType="TIMESTAMP"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,resourceId,studentId,
+        viewNum,viewTime,createTime,
+        updateTime,isDelete
+    </sql>
+</mapper>
