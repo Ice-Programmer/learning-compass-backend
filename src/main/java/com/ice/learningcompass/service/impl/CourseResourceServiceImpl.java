@@ -7,22 +7,22 @@ import com.ice.learningcompass.constant.UserConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.mapper.CourseMapper;
+import com.ice.learningcompass.mapper.CourseResourceMapper;
+import com.ice.learningcompass.mapper.ResourceStudentMapper;
 import com.ice.learningcompass.model.dto.courseresource.CourseResourceAddRequest;
 import com.ice.learningcompass.model.entity.Course;
 import com.ice.learningcompass.model.entity.CourseResource;
+import com.ice.learningcompass.model.entity.ResourceStudent;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.enums.CourseResourceTypeEnum;
-import com.ice.learningcompass.model.vo.CourseResourceVO;
+import com.ice.learningcompass.model.vo.ResourceStudentVO;
 import com.ice.learningcompass.service.CourseResourceService;
-import com.ice.learningcompass.mapper.CourseResourceMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +36,9 @@ public class CourseResourceServiceImpl extends ServiceImpl<CourseResourceMapper,
 
     @Resource
     private CourseMapper courseMapper;
+
+    @Resource
+    private ResourceStudentMapper resourceStudentMapper;
 
     @Override
     public Long addCourseResource(CourseResourceAddRequest courseResourceAddRequest, Long teacherId) {
@@ -87,17 +90,43 @@ public class CourseResourceServiceImpl extends ServiceImpl<CourseResourceMapper,
     }
 
     @Override
-    public List<CourseResourceVO> getCourseResourceVO(Long courseId) {
+    public List<ResourceStudentVO> getCourseResourceVO(Long courseId, User loginUser) {
         List<CourseResource> courseResourceList = baseMapper.selectList(
                 Wrappers.<CourseResource>lambdaQuery()
                         .eq(CourseResource::getCourseId, courseId)
-                        .select(CourseResource::getId, CourseResource::getCourseId,
-                                CourseResource::getResourceName, CourseResource::getResourceUrl)
         );
 
+        // 判断用户是否阅读过
+        Set<Long> resourceIdSet = courseResourceList
+                .stream().map(CourseResource::getId)
+                .collect(Collectors.toSet());
+
+        if (resourceIdSet.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<ResourceStudent> resourceStudentList = resourceStudentMapper.selectList(
+                Wrappers.<ResourceStudent>lambdaQuery()
+                        .in(ResourceStudent::getResourceId, resourceIdSet)
+                        .eq(ResourceStudent::getStudentId, loginUser.getId())
+                        .select(ResourceStudent::getViewTime, ResourceStudent::getViewNum, ResourceStudent::getResourceId)
+        );
+        Map<Long, ResourceStudent> resourceStudentMap = resourceStudentList.stream()
+                .collect(Collectors.toMap(ResourceStudent::getResourceId, resourceStudent -> resourceStudent));
+
         return courseResourceList.stream()
-                .map(CourseResourceVO::objToVo)
-                .collect(Collectors.toList());
+                .map(resource -> {
+                    ResourceStudentVO resourceStudentVO = ResourceStudentVO.objToVo(resource);
+                    ResourceStudent resourceStudent = resourceStudentMap.get(resource.getId());
+                    if (resourceStudent == null) {
+                        resourceStudentVO.setIsRead(false);
+                        return resourceStudentVO;
+                    }
+                    resourceStudentVO.setIsRead(true);
+                    resourceStudentVO.setViewNum(resourceStudent.getViewNum());
+                    resourceStudentVO.setViewTime(resourceStudent.getViewTime());
+                    return resourceStudentVO;
+                }).collect(Collectors.toList());
     }
 
     private void validCourseResource(CourseResource courseResource) {

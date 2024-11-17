@@ -27,18 +27,19 @@ create table if not exists `user`
 -- 课程表
 create table if not exists `course`
 (
-    `id`          bigint auto_increment comment 'id' primary key,
-    `name`        varchar(256)                       null comment '课程名称',
-    `description` text                               null comment '描述',
-    `picture`     varchar(2048)                      null comment '图片',
-    `tags`        varchar(1024)                      null comment '标签列表（json 数组）',
-    `teacherId`   bigint                             not null comment '创建教师 id',
-    `status`      tinyint  default 0                 not null comment '课程状态：0-开启/1-关闭',
-    `startTime`   datetime default CURRENT_TIMESTAMP not null comment '开始时间',
-    `endTime`     datetime                           not null comment '结束时间',
-    `createTime`  datetime default CURRENT_TIMESTAMP not null comment '创建时间',
-    `updateTime`  datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
-    `isDelete`    tinyint  default 0                 not null comment '是否删除',
+    `id`           bigint auto_increment comment 'id' primary key,
+    `name`         varchar(256)                       null comment '课程名称',
+    `description`  text                               null comment '描述',
+    `introduction` text                               null comment '课程介绍',
+    `picture`      varchar(2048)                      null comment '图片',
+    `tags`         varchar(1024)                      null comment '标签列表（json 数组）',
+    `teacherId`    bigint                             not null comment '创建教师 id',
+    `status`       tinyint  default 0                 not null comment '课程状态：0-开启/1-关闭',
+    `startTime`    datetime default CURRENT_TIMESTAMP not null comment '开始时间',
+    `endTime`      datetime                           not null comment '结束时间',
+    `createTime`   datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    `updateTime`   datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    `isDelete`     tinyint  default 0                 not null comment '是否删除',
     index idx_teacherId (teacherId)
 ) comment '课程' collate = utf8mb4_unicode_ci;
 

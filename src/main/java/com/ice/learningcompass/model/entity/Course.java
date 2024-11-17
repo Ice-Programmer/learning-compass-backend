@@ -4,13 +4,15 @@ import com.baomidou.mybatisplus.annotation.*;
 
 import java.io.Serializable;
 import java.util.Date;
+
 import lombok.Data;
 
 /**
  * 课程
+ *
  * @TableName course
  */
-@TableName(value ="course")
+@TableName(value = "course")
 @Data
 public class Course implements Serializable {
     /**
@@ -28,6 +30,11 @@ public class Course implements Serializable {
      * 描述
      */
     private String description;
+
+    /**
+     * 课程介绍
+     */
+    private String introduction;
 
     /**
      * 图片

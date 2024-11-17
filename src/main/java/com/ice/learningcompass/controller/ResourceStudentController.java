@@ -41,7 +41,6 @@ public class ResourceStudentController {
      * @return 访问次数
      */
     @PostMapping("/view")
-    @SaCheckRole(UserConstant.STUDENT_ROLE)
     public BaseResponse<Integer> studentViewResource(@RequestBody StudentViewResourceRequest studentViewResourceRequest) {
         ThrowUtils.throwIf(studentViewResourceRequest == null, ErrorCode.PARAMS_ERROR);
         Long resourceId = studentViewResourceRequest.getResourceId();

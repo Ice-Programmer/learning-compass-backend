@@ -10,10 +10,8 @@ import com.ice.learningcompass.constant.UserConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.model.dto.courseresource.CourseResourceAddRequest;
-import com.ice.learningcompass.model.entity.CourseResource;
 import com.ice.learningcompass.model.entity.User;
-import com.ice.learningcompass.model.enums.UserRoleEnum;
-import com.ice.learningcompass.model.vo.CourseResourceVO;
+import com.ice.learningcompass.model.vo.ResourceStudentVO;
 import com.ice.learningcompass.service.CourseResourceService;
 import com.ice.learningcompass.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -78,13 +76,16 @@ public class CourseResourceController {
     }
 
     @GetMapping("/get/vo/{courseId}")
-    public BaseResponse<List<CourseResourceVO>> getCourseResourceVO(@PathVariable("courseId") Long courseId) {
+    public BaseResponse<List<ResourceStudentVO>> getCourseResourceVO(@PathVariable("courseId") Long courseId) {
         if (courseId == null || courseId <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Course Id can not be empty!");
         }
 
-        List<CourseResourceVO> courseResourceVOList = courseResourceService.getCourseResourceVO(courseId);
+        // 获取当前登录用户
+        User loginUser = userService.getLoginUser();
 
-        return ResultUtils.success(courseResourceVOList);
+        List<ResourceStudentVO> resourceStudentVOList = courseResourceService.getCourseResourceVO(courseId, loginUser);
+
+        return ResultUtils.success(resourceStudentVOList);
     }
 }

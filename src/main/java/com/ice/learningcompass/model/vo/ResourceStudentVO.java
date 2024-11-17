@@ -1,21 +1,17 @@
 package com.ice.learningcompass.model.vo;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
-import com.google.gson.reflect.TypeToken;
-import com.ice.learningcompass.model.entity.Course;
 import com.ice.learningcompass.model.entity.CourseResource;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 课程资料 VO
  */
 @Data
-public class CourseResourceVO implements Serializable {
+public class ResourceStudentVO implements Serializable {
     /**
      * id
      */
@@ -42,18 +38,33 @@ public class CourseResourceVO implements Serializable {
     private Date createTime;
 
     /**
+     * 阅读次数
+     */
+    private Integer viewNum;
+
+    /**
+     * 阅读时间
+     */
+    private Date viewTime;
+
+    /**
+     * 是否阅读
+     */
+    private Boolean isRead;
+
+    /**
      * 对象转包装类
      *
      * @param courseResource 课程资料
      * @return 课程资料包装类
      */
-    public static CourseResourceVO objToVo(CourseResource courseResource) {
+    public static ResourceStudentVO objToVo(CourseResource courseResource) {
         if (courseResource == null) {
             return null;
         }
-        CourseResourceVO courseResourceVO = new CourseResourceVO();
-        BeanUtils.copyProperties(courseResource, courseResourceVO);
-        return courseResourceVO;
+        ResourceStudentVO resourceStudentVO = new ResourceStudentVO();
+        BeanUtils.copyProperties(courseResource, resourceStudentVO);
+        return resourceStudentVO;
     }
 
     private static final long serialVersionUID = 1L;

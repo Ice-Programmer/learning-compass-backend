@@ -41,6 +41,11 @@ public class CourseVO implements Serializable {
     private String description;
 
     /**
+     * 课程介绍
+     */
+    private String introduction;
+
+    /**
      * 图片
      */
     private String picture;
