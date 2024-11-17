@@ -194,6 +194,11 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course>
                 getQueryWrapper(courseQueryRequest));
 
         List<Course> courseList = coursePage.getRecords();
+
+        if (courseList.isEmpty()) {
+            return new Page<>(current, size, 0); // 返回一个空的 Page，设置 total 为 0
+        }
+
         // 获取所有创建教师 id
         Set<Long> teacherIds = courseList.stream()
                 .map(Course::getTeacherId)
