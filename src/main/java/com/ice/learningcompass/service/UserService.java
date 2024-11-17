@@ -77,7 +77,7 @@ public interface UserService extends IService<User> {
      * @param userList 用户列表
      * @return 脱敏用户列表
      */
-    List<UserVO> getUserVO(List<User> userList);
+    List<UserVO> getUserVOList(List<User> userList);
 
     /**
      * 创建用户（仅超级管理员）

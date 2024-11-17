@@ -1,29 +1,38 @@
 package com.ice.learningcompass.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.ice.learningcompass.common.ErrorCode;
+import com.ice.learningcompass.constant.CommonConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
-import com.ice.learningcompass.mapper.CourseMapper;
+import com.ice.learningcompass.mapper.*;
 import com.ice.learningcompass.model.dto.post.PostAddRequest;
-import com.ice.learningcompass.model.entity.Course;
-import com.ice.learningcompass.model.entity.Post;
-import com.ice.learningcompass.model.entity.User;
+import com.ice.learningcompass.model.dto.post.PostQueryRequest;
+import com.ice.learningcompass.model.entity.*;
 import com.ice.learningcompass.model.enums.PostTypeEnum;
+import com.ice.learningcompass.model.vo.PostVO;
+import com.ice.learningcompass.model.vo.UserVO;
 import com.ice.learningcompass.service.PostPictureService;
 import com.ice.learningcompass.service.PostService;
-import com.ice.learningcompass.mapper.PostMapper;
+import com.ice.learningcompass.service.UserService;
+import com.ice.learningcompass.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * @author chenjiahan
@@ -44,7 +53,18 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     private TransactionTemplate transactionTemplate;
 
     @Resource
+    private UserService userService;
+
+    @Resource
     private PostPictureService pictureService;
+
+    @Resource
+    private PostThumbMapper postThumbMapper;
+
+    @Resource
+    private PostFavourMapper postFavourMapper;
+    @Autowired
+    private PostPictureMapper postPictureMapper;
 
     @Override
     public Long addPost(PostAddRequest postAddRequest, User loginUser) {
@@ -77,6 +97,113 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             return Boolean.TRUE;
         });
         return postId.longValue();
+    }
+
+    @Override
+    public QueryWrapper<Post> getQueryWrapper(PostQueryRequest postQueryRequest) {
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        if (postQueryRequest == null) {
+            return queryWrapper;
+        }
+        String searchText = postQueryRequest.getSearchText();
+        String sortField = postQueryRequest.getSortField();
+        String sortOrder = postQueryRequest.getSortOrder();
+        Long id = postQueryRequest.getId();
+        String name = postQueryRequest.getName();
+        String content = postQueryRequest.getContent();
+        List<String> tagList = postQueryRequest.getTagList();
+        Long userId = postQueryRequest.getUserId();
+        Long notId = postQueryRequest.getNotId();
+        List<Long> ids = postQueryRequest.getIds();
+        Long courseId = postQueryRequest.getCourseId();
+        Long postId = postQueryRequest.getPostId();
+        Integer isReply = postQueryRequest.getIsReply();
+        // todo 搜索收藏点赞相关用户
+        Long favourUserId = postQueryRequest.getFavourUserId();
+        Long thumbUserId = postQueryRequest.getThumbUserId();
+
+        // 拼接查询条件
+        if (StringUtils.isNotBlank(searchText)) {
+            queryWrapper.like("title", searchText).or().like("content", searchText);
+        }
+        queryWrapper.like(StringUtils.isNotBlank(name), "name", name);
+        queryWrapper.like(StringUtils.isNotBlank(content), "content", content);
+        if (!CollectionUtils.isEmpty(tagList)) {
+            for (String tag : tagList) {
+                queryWrapper.like("tags", "\"" + tag + "\"");
+            }
+        }
+        queryWrapper.ne(ObjectUtils.isNotEmpty(notId), "id", notId);
+        queryWrapper.in(!CollectionUtils.isEmpty(ids), "id", ids);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(courseId), "courseId", courseId);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(postId), "postId", postId);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(postId), "postId", postId);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(isReply), "isReply", isReply);
+        queryWrapper.eq("isDelete", false);
+        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                sortField);
+        return queryWrapper;
+    }
+
+    @Override
+    public Page<PostVO> getPostVOPage(Page<Post> postPage, User loginUser) {
+        List<Post> postList = postPage.getRecords();
+        Page<PostVO> postVOPage = new Page<>(postPage.getCurrent(), postPage.getSize(), postPage.getTotal());
+        if (CollectionUtils.isEmpty(postList)) {
+            return postVOPage;
+        }
+        // 1. 关联查询用户信息
+        Set<Long> userIdSet = postList.stream().map(Post::getUserId).collect(Collectors.toSet());
+        Map<Long, List<UserVO>> userMap = userService.listByIds(userIdSet).stream()
+                .map(user -> userService.getUserVO(user))
+                .collect(Collectors.groupingBy(UserVO::getId));
+        // 2. 已登录，获取用户点赞、收藏状态
+        Map<Long, Boolean> postIdHasThumbMap = new HashMap<>();
+        Map<Long, Boolean> postIdHasFavourMap = new HashMap<>();
+        Set<Long> postIdSet = postList.stream().map(Post::getId).collect(Collectors.toSet());
+
+        // 获取点赞
+        List<PostThumb> postPostThumbList = postThumbMapper.selectList(
+                Wrappers.<PostThumb>lambdaQuery()
+                        .in(PostThumb::getPostId, postIdSet)
+                        .eq(PostThumb::getUserId, loginUser.getId())
+        );
+        postPostThumbList.forEach(postPostThumb -> postIdHasThumbMap.put(postPostThumb.getPostId(), true));
+        // 获取收藏
+        List<PostFavour> postFavourList = postFavourMapper.selectList(
+                Wrappers.<PostFavour>lambdaQuery()
+                        .eq(PostFavour::getUserId, loginUser.getId())
+                        .in(PostFavour::getPostId, postIdSet)
+        );
+        postFavourList.forEach(postFavour -> postIdHasFavourMap.put(postFavour.getPostId(), true));
+        // 获取图片
+        List<PostPicture> pictureList = postPictureMapper.selectList(
+                Wrappers.<PostPicture>lambdaQuery()
+                        .in(PostPicture::getPostId, postIdSet)
+                        .select(PostPicture::getPostId, PostPicture::getPicture)
+        );
+        Map<Long, List<PostPicture>> pictureMap = pictureList.stream()
+                .collect(Collectors.groupingBy(PostPicture::getPostId));
+
+        // 填充信息
+        List<PostVO> postVOList = postList.stream().map(post -> {
+            PostVO postVO = PostVO.objToVo(post);
+            Long userId = post.getUserId();
+            UserVO userVO = null;
+            if (userMap.containsKey(userId)) {
+                userVO = userMap.get(userId).get(0);
+            }
+            postVO.setUserInfo(userVO);
+            postVO.setHasThumb(postIdHasThumbMap.getOrDefault(post.getId(), false));
+            postVO.setHasFavour(postIdHasFavourMap.getOrDefault(post.getId(), false));
+            List<PostPicture> postPictureList = pictureMap.getOrDefault(post.getId(), Collections.emptyList());
+            postVO.setPictureList(postPictureList.stream().map(PostPicture::getPicture).collect(Collectors.toList()));
+            return postVO;
+        }).collect(Collectors.toList());
+        postVOPage.setRecords(postVOList);
+        return postVOPage;
     }
 
     private void validatePost(Post post, boolean add) {

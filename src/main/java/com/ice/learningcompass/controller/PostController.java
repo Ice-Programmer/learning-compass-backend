@@ -1,11 +1,16 @@
 package com.ice.learningcompass.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ice.learningcompass.common.BaseResponse;
 import com.ice.learningcompass.common.ErrorCode;
 import com.ice.learningcompass.common.ResultUtils;
 import com.ice.learningcompass.exception.BusinessException;
+import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.model.dto.post.PostAddRequest;
+import com.ice.learningcompass.model.dto.post.PostQueryRequest;
+import com.ice.learningcompass.model.entity.Post;
 import com.ice.learningcompass.model.entity.User;
+import com.ice.learningcompass.model.vo.PostVO;
 import com.ice.learningcompass.service.PostService;
 import com.ice.learningcompass.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -55,4 +60,25 @@ public class PostController {
 
         return ResultUtils.success(postId);
     }
+
+    /**
+     * 获取帖子分页
+     *
+     * @param postQueryRequest 帖子请求 Request
+     * @return 帖子分页
+     */
+    @PostMapping("/page/vo")
+    public BaseResponse<Page<PostVO>> pagePostVO(@RequestBody PostQueryRequest postQueryRequest) {
+        if (postQueryRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser();
+        postQueryRequest.setUserId(loginUser.getId());
+        long current = postQueryRequest.getCurrent();
+        long size = postQueryRequest.getPageSize();
+        Page<Post> postPage = postService.page(new Page<>(current, size),
+                postService.getQueryWrapper(postQueryRequest));
+        return ResultUtils.success(postService.getPostVOPage(postPage, loginUser));
+    }
+
 }
