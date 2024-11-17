@@ -42,6 +42,11 @@ public class CourseResource implements Serializable {
     private String resourceUrl;
 
     /**
+     * 资料类型
+     */
+    private Integer resourceType;
+
+    /**
      * 创建时间
      */
     private Date createTime;

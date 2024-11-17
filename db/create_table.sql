@@ -66,6 +66,7 @@ create table if not exists `course_resource`
     `courseId`     bigint                             not null comment '课程 id',
     `resourceName` varchar(256)                       null comment '资料名称',
     `resourceUrl`  varchar(1024)                      null comment '资料链接',
+    `resourceType` tinyint                            null comment '课程资料',
     `createTime`   datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     `updateTime`   datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     `isDelete`     tinyint  default 0                 not null comment '是否删除',

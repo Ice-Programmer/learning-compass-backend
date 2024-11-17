@@ -27,4 +27,9 @@ public class CourseResourceAddRequest implements Serializable {
      * 资料 url
      */
     private String resourceUrl;
+
+    /**
+     * 课程类型
+     */
+    private Integer resourceType;
 }

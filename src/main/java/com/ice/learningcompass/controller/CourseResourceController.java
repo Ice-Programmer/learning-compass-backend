@@ -13,14 +13,13 @@ import com.ice.learningcompass.model.dto.courseresource.CourseResourceAddRequest
 import com.ice.learningcompass.model.entity.CourseResource;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.enums.UserRoleEnum;
+import com.ice.learningcompass.model.vo.CourseResourceVO;
 import com.ice.learningcompass.service.CourseResourceService;
 import com.ice.learningcompass.service.UserService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author <a href="https://github.com/IceProgramer">chenjiahan</a>
@@ -78,4 +77,14 @@ public class CourseResourceController {
         return ResultUtils.success(result);
     }
 
+    @GetMapping("/get/vo/{courseId}")
+    public BaseResponse<List<CourseResourceVO>> getCourseResourceVO(@PathVariable("courseId") Long courseId) {
+        if (courseId == null || courseId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Course Id can not be empty!");
+        }
+
+        List<CourseResourceVO> courseResourceVOList = courseResourceService.getCourseResourceVO(courseId);
+
+        return ResultUtils.success(courseResourceVOList);
+    }
 }

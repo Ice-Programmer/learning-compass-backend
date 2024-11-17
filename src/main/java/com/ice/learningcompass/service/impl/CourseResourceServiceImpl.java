@@ -11,6 +11,8 @@ import com.ice.learningcompass.model.dto.courseresource.CourseResourceAddRequest
 import com.ice.learningcompass.model.entity.Course;
 import com.ice.learningcompass.model.entity.CourseResource;
 import com.ice.learningcompass.model.entity.User;
+import com.ice.learningcompass.model.enums.CourseResourceTypeEnum;
+import com.ice.learningcompass.model.vo.CourseResourceVO;
 import com.ice.learningcompass.service.CourseResourceService;
 import com.ice.learningcompass.mapper.CourseResourceMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -18,7 +20,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author chenjiahan
@@ -81,10 +86,25 @@ public class CourseResourceServiceImpl extends ServiceImpl<CourseResourceMapper,
         return true;
     }
 
+    @Override
+    public List<CourseResourceVO> getCourseResourceVO(Long courseId) {
+        List<CourseResource> courseResourceList = baseMapper.selectList(
+                Wrappers.<CourseResource>lambdaQuery()
+                        .eq(CourseResource::getCourseId, courseId)
+                        .select(CourseResource::getId, CourseResource::getCourseId,
+                                CourseResource::getResourceName, CourseResource::getResourceUrl)
+        );
+
+        return courseResourceList.stream()
+                .map(CourseResourceVO::objToVo)
+                .collect(Collectors.toList());
+    }
+
     private void validCourseResource(CourseResource courseResource) {
         Long courseId = courseResource.getCourseId();
         String resourceName = courseResource.getResourceName();
         String resourceUrl = courseResource.getResourceUrl();
+        Integer resourceType = courseResource.getResourceType();
 
         if (StringUtils.isAnyBlank(resourceName, resourceUrl)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Resource relevant information can not be empty!");
@@ -92,6 +112,10 @@ public class CourseResourceServiceImpl extends ServiceImpl<CourseResourceMapper,
 
         if (courseId == null || courseId <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Course Id can not be empty!");
+        }
+
+        if (resourceType == null || !CourseResourceTypeEnum.getValues().contains(resourceType)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Resource Type Error!");
         }
     }
 }

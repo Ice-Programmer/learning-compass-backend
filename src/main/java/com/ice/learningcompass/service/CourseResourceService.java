@@ -4,6 +4,9 @@ import com.ice.learningcompass.model.dto.courseresource.CourseResourceAddRequest
 import com.ice.learningcompass.model.entity.CourseResource;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ice.learningcompass.model.entity.User;
+import com.ice.learningcompass.model.vo.CourseResourceVO;
+
+import java.util.List;
 
 /**
  * @author chenjiahan
@@ -29,4 +32,12 @@ public interface CourseResourceService extends IService<CourseResource> {
      * @return
      */
     Boolean deleteCourseResource(Long resourceId, User loginUser);
+
+    /**
+     * 获取课程资料列表
+     *
+     * @param courseId 课程 id
+     * @return 课程资料列表
+     */
+    List<CourseResourceVO> getCourseResourceVO(Long courseId);
 }
