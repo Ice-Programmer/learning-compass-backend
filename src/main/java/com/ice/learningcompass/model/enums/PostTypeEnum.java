@@ -7,23 +7,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 课程资料类型
+ * 帖子是否回复枚举
  *
  * @author <a href="https://github.com/IceProgramer">chenjiahan</a>
  * @create 2024/9/19 16:17
  */
-public enum CourseResourceTypeEnum {
+public enum PostTypeEnum {
 
-    COURSE_OUTLINE("课程大纲", 0),
-    COURSE_LECTURE("课程课件", 1),
-    COURSE_LAB("课程实验", 2),
-    COURSE_VIDEO("课程视频", 3);
+    NOT_REPLY("原帖", 0),
+    IS_REPLY("回复贴", 1);
 
     private final String text;
 
     private final Integer value;
 
-    CourseResourceTypeEnum(String text, Integer value) {
+    PostTypeEnum(String text, Integer value) {
         this.text = text;
         this.value = value;
     }
@@ -43,11 +41,11 @@ public enum CourseResourceTypeEnum {
      * @param value
      * @return
      */
-    public static CourseResourceTypeEnum getEnumByValue(Integer value) {
+    public static PostTypeEnum getEnumByValue(Integer value) {
         if (ObjectUtils.isEmpty(value)) {
             return null;
         }
-        for (CourseResourceTypeEnum anEnum : CourseResourceTypeEnum.values()) {
+        for (PostTypeEnum anEnum : PostTypeEnum.values()) {
             if (anEnum.value.equals(value)) {
                 return anEnum;
             }
