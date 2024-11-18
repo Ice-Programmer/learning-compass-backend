@@ -66,6 +66,11 @@ public class PostQueryRequest extends PageRequest implements Serializable {
     private Integer isReply;
 
     /**
+     * 帖子类型
+     */
+    private Integer postType;
+
+    /**
      * notId
      */
     private Long notId;

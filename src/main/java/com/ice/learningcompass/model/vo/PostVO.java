@@ -66,6 +66,11 @@ public class PostVO implements Serializable {
     private Integer isReply;
 
     /**
+     * 帖子类型
+     */
+    private Integer postType;
+
+    /**
      * 浏览数
      */
     private Integer viewNum;

@@ -100,6 +100,7 @@ create table if not exists `post`
     `postId`     bigint                             null comment '原帖id',
     `tags`       varchar(1024)                      null comment '标签列表（json 数组）',
     `isReply`    tinyint  default 0                 not null comment '是否评论 0-原帖/1-评论贴',
+    `postType`   tinyint  default 0                 not null comment '帖子类型',
     `viewNum`    int      default 0                 not null comment '浏览数',
     `thumbNum`   int      default 0                 not null comment '点赞数',
     `favourNum`  int      default 0                 not null comment '收藏数',

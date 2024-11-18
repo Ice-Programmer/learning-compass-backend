@@ -14,6 +14,7 @@ import com.ice.learningcompass.mapper.*;
 import com.ice.learningcompass.model.dto.post.PostAddRequest;
 import com.ice.learningcompass.model.dto.post.PostQueryRequest;
 import com.ice.learningcompass.model.entity.*;
+import com.ice.learningcompass.model.enums.PostReplyTypeEnum;
 import com.ice.learningcompass.model.enums.PostTypeEnum;
 import com.ice.learningcompass.model.vo.PostVO;
 import com.ice.learningcompass.model.vo.UserVO;
@@ -25,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -80,8 +80,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         // 补充
         post.setUserId(loginUser.getId());
         int isReply = post.getPostId() == null ?
-                PostTypeEnum.NOT_REPLY.getValue() :
-                PostTypeEnum.IS_REPLY.getValue();
+                PostReplyTypeEnum.NOT_REPLY.getValue() :
+                PostReplyTypeEnum.IS_REPLY.getValue();
         post.setIsReply(isReply);
 
         AtomicLong postId = new AtomicLong();
@@ -121,6 +121,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         Long courseId = postQueryRequest.getCourseId();
         Long postId = postQueryRequest.getPostId();
         Integer isReply = postQueryRequest.getIsReply();
+        Integer postType = postQueryRequest.getPostType();
         // todo 搜索收藏点赞相关用户
         Long favourUserId = postQueryRequest.getFavourUserId();
         Long thumbUserId = postQueryRequest.getThumbUserId();
@@ -143,6 +144,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         queryWrapper.eq(ObjectUtils.isNotEmpty(postId), "postId", postId);
         queryWrapper.eq(ObjectUtils.isNotEmpty(postId), "postId", postId);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(postType), "postType", postType);
         queryWrapper.eq(ObjectUtils.isNotEmpty(isReply), "isReply", isReply);
         queryWrapper.eq("isDelete", false);
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
@@ -244,6 +246,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         String content = post.getContent();
         Long postId = post.getPostId();
         Long courseId = post.getCourseId();
+        Integer postType = post.getPostType();
 
         // 创建时，参数不能为空
         if (add) {
@@ -269,6 +272,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             boolean exists = courseMapper.exists(Wrappers.<Course>lambdaQuery()
                     .eq(Course::getId, courseId));
             ThrowUtils.throwIf(!exists, ErrorCode.NOT_FOUND_ERROR, "Course Post must has relative course!");
+        }
+        // 校验帖子类型
+        if (postType != null) {
+            if (!PostTypeEnum.getValues().contains(postType)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "Post Type Error!");
+            }
         }
     }
 

@@ -32,6 +32,11 @@ public class PostAddRequest implements Serializable {
     private Long postId;
 
     /**
+     * 帖子类型
+     */
+    private Integer postType;
+
+    /**
      * 标签列表（json 数组）
      */
     private List<String> tagList;
