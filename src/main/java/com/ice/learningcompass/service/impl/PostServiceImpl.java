@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.ice.learningcompass.common.ErrorCode;
 import com.ice.learningcompass.constant.CommonConstant;
+import com.ice.learningcompass.constant.UserConstant;
 import com.ice.learningcompass.exception.BusinessException;
 import com.ice.learningcompass.exception.ThrowUtils;
 import com.ice.learningcompass.mapper.*;
@@ -26,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.CollectionUtils;
 
@@ -63,7 +65,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
 
     @Resource
     private PostFavourMapper postFavourMapper;
-    @Autowired
+
+    @Resource
     private PostPictureMapper postPictureMapper;
 
     @Override
@@ -206,6 +209,33 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         return postVOPage;
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deletePost(Long postId, User loginUser) {
+        // 判断帖子是否存在
+        Post post = baseMapper.selectOne(Wrappers.<Post>lambdaQuery()
+                .eq(Post::getId, postId)
+                .select(Post::getId, Post::getUserId)
+                .last("limit 1"));
+        ThrowUtils.throwIf(post == null, ErrorCode.OPERATION_ERROR, "Delete post Not Found!");
+
+        // 判断是否有权限删除
+        hasPostRole(post, loginUser);
+
+        // 删除帖子信息
+        boolean result = baseMapper.deleteById(postId) != 0;
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "Delete post ERROR!");
+        log.info("Delete Post {} by User {}", postId, loginUser.getId());
+
+        // 删除帖子图片
+        int pictureNum = postPictureMapper.delete(Wrappers.<PostPicture>lambdaQuery()
+                .eq(PostPicture::getPostId, postId));
+        ThrowUtils.throwIf(pictureNum <= 0, ErrorCode.OPERATION_ERROR, "Delete post Picture ERROR!");
+        log.info("Delete {} Post pictures by User {}", pictureNum, loginUser.getId());
+
+        return true;
+    }
+
     private void validatePost(Post post, boolean add) {
         if (post == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -241,6 +271,22 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             ThrowUtils.throwIf(!exists, ErrorCode.NOT_FOUND_ERROR, "Course Post must has relative course!");
         }
     }
+
+    /**
+     * 判断是否拥有操作权限（仅创建者和管理员）
+     *
+     * @param post      帖子
+     * @param loginUser 登录用户
+     */
+    private void hasPostRole(Post post, User loginUser) {
+        if (!post.getUserId().equals(loginUser.getId()) &&
+                !UserConstant.ADMIN_ROLE.equals(loginUser.getUserRole()) &&
+                !UserConstant.SUPER_ADMIN_ROLE.equals(loginUser.getUserRole())) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "Only Post Creator or Admin can delete!");
+        }
+    }
+
+
 }
 
 

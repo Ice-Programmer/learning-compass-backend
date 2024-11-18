@@ -1,6 +1,5 @@
 package com.ice.learningcompass.service;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ice.learningcompass.model.dto.post.PostAddRequest;
@@ -9,6 +8,7 @@ import com.ice.learningcompass.model.entity.Post;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ice.learningcompass.model.entity.User;
 import com.ice.learningcompass.model.vo.PostVO;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author chenjiahan
@@ -42,4 +42,14 @@ public interface PostService extends IService<Post> {
      * @return 帖子VO分页
      */
     Page<PostVO> getPostVOPage(Page<Post> postPage, User loginUser);
+
+    /**
+     * 删除帖子
+     *
+     * @param postId    帖子 id
+     * @param loginUser 当前登录用户
+     * @return 删除成功
+     */
+    @Transactional(rollbackFor = Exception.class)
+    boolean deletePost(Long postId, User loginUser);
 }
