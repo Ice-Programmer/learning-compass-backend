@@ -17,7 +17,8 @@ public enum PostTypeEnum {
     COMMUNITY_POST("社区帖", 0),
     LEARNING_CLOCK_IN_POST("学习打卡", 1),
     QUESTION_POST("提问帖", 2),
-    KNOWLEDGE_SHARE_POST("知识分享", 3);
+    KNOWLEDGE_SHARE_POST("知识分享", 3),
+    LEARNING_NOTE("笔记", 4);
 
 
 
