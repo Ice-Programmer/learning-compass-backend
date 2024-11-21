@@ -54,7 +54,7 @@ public class UserController {
         String checkPassword = userRegisterRequest.getCheckPassword();
         String userRole = userRegisterRequest.getUserRole();
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, userRole)) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Params can not be empty!");
         }
         long result = userService.userRegister(userAccount, userPassword, checkPassword, userRole);
         return ResultUtils.success(result);
@@ -244,6 +244,42 @@ public class UserController {
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
+
+    /**
+     * 更改密码
+     *
+     * @param userChangePasswordRequest 用户更改密码请求体
+     * @return 更新成功
+     */
+    @PostMapping("/change/password")
+    public BaseResponse<Boolean> changePassword(@RequestBody UserChangePasswordRequest userChangePasswordRequest) {
+        // 参数验证
+        if (userChangePasswordRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        String originalPassword = userChangePasswordRequest.getOriginalPassword();
+        String newPassword = userChangePasswordRequest.getNewPassword();
+        String checkPassword = userChangePasswordRequest.getCheckPassword();
+
+        if (StringUtils.isAnyBlank(originalPassword, newPassword, checkPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Params can not be empty!");
+        }
+
+        if (!newPassword.equals(checkPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "New password and confirm password do not match!");
+        }
+
+        // 获取当前登录用户
+        User loginUser = userService.getLoginUser();
+
+        // 调用服务层方法更改密码
+        boolean result = userService.changePassword(loginUser.getId(), originalPassword, newPassword);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+
+        return ResultUtils.success(true);
+    }
+
 
     // endregion
 }

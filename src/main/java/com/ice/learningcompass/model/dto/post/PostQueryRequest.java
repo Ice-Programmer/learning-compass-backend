@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 帖子查询 Request
@@ -74,6 +75,11 @@ public class PostQueryRequest extends PageRequest implements Serializable {
      * notId
      */
     private Long notId;
+
+    /**
+     * 帖子 ids
+     */
+    private Set<Long> postIds;
 
     /**
      * 收藏用户 id

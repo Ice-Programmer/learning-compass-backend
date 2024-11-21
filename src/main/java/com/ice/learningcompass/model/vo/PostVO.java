@@ -96,6 +96,11 @@ public class PostVO implements Serializable {
     private Boolean hasFavour;
 
     /**
+     * 帖子回复列表
+     */
+    private List<PostVO> replyPostList;
+
+    /**
      * 创建时间
      */
     private Date createTime;

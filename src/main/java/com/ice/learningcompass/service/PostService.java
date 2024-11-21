@@ -37,11 +37,12 @@ public interface PostService extends IService<Post> {
     /**
      * 封装帖子VO分页
      *
-     * @param postPage  帖子分页
-     * @param loginUser 当前登录用户
+     * @param postPage   帖子分页
+     * @param loginUser  当前登录用户
+     * @param isGetOrigin 是否获取回复贴
      * @return 帖子VO分页
      */
-    Page<PostVO> getPostVOPage(Page<Post> postPage, User loginUser);
+    Page<PostVO> getPostVOPage(Page<Post> postPage, User loginUser, Boolean isGetOrigin);
 
     /**
      * 删除帖子

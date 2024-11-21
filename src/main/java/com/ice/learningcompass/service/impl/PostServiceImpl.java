@@ -120,6 +120,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         List<Long> ids = postQueryRequest.getIds();
         Long courseId = postQueryRequest.getCourseId();
         Long postId = postQueryRequest.getPostId();
+        Set<Long> postIds = postQueryRequest.getPostIds();
         Integer isReply = postQueryRequest.getIsReply();
         Integer postType = postQueryRequest.getPostType();
         // todo 搜索收藏点赞相关用户
@@ -139,6 +140,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         }
         queryWrapper.ne(ObjectUtils.isNotEmpty(notId), "id", notId);
         queryWrapper.in(!CollectionUtils.isEmpty(ids), "id", ids);
+//        queryWrapper.in(!CollectionUtils.isEmpty(postIds), "postId", postIds);
         queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjectUtils.isNotEmpty(courseId), "courseId", courseId);
         queryWrapper.eq(ObjectUtils.isNotEmpty(postId), "postId", postId);
@@ -153,7 +155,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     }
 
     @Override
-    public Page<PostVO> getPostVOPage(Page<Post> postPage, User loginUser) {
+    public Page<PostVO> getPostVOPage(Page<Post> postPage, User loginUser, Boolean isGetOrigin) {
         List<Post> postList = postPage.getRecords();
         Page<PostVO> postVOPage = new Page<>(postPage.getCurrent(), postPage.getSize(), postPage.getTotal());
         if (CollectionUtils.isEmpty(postList)) {

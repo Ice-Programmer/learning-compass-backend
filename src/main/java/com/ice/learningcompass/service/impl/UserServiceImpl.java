@@ -240,6 +240,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return queryWrapper;
     }
 
+    @Override
+    public boolean changePassword(Long userId, String originalPassword, String newPassword) {
+        // 根据用户 ID 获取用户
+        User user = baseMapper.selectById(userId);
+        ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR, "User not found!");
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + originalPassword).getBytes());
+        // 验证原有密码
+        if (!user.getUserPassword().equals(encryptPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Original password is incorrect!");
+        }
+
+        // 加密新密码
+        String encodedNewPassword = DigestUtils.md5DigestAsHex((SALT + newPassword).getBytes());
+        user.setUserPassword(encodedNewPassword);
+
+        // 更新用户密码
+        int updateCount = baseMapper.updateById(user);
+        return updateCount > 0;
+    }
+
     /**
      * 生成随机头像
      *

@@ -39,7 +39,7 @@ public class PostThumbController {
     @PostMapping("/")
     public BaseResponse<Integer> doThumb(@RequestBody PostThumbAddRequest postThumbAddRequest) {
         if (postThumbAddRequest == null || postThumbAddRequest.getPostId() <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Thumb Post Id ERROR!");
         }
         // 登录才能点赞
         final User loginUser = userService.getLoginUser();
